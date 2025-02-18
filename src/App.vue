@@ -1,22 +1,17 @@
 <template>
-  <v-app style="padding: 10px;">
+  <v-app style="px-5">
     <v-main>
       <v-responsive class="align-center fill-height mx-auto" max-width="900">
         <h1>Super Beatbox 3000</h1>
         <v-row>
           <v-col cols="12" :style="'position:relative'">
-            
             <div :style="'position:absolute; right:1em;top:1.5em;'"><v-btn @click="showPitchHelp = true" :style="'z-index: 999;'">Soundmap...</v-btn></div>
-          
             <v-text-field 
               label="Drum Pitch Sequence" 
               v-model="drumPitchesInput" 
               placeholder="e.g. 36 38 39 42 43 46 47 49 50 53 75" 
               @update:modelValue="saveSettingsToLocalStorage" />
-              
-              
-              
-          </v-col>
+            </v-col>
         </v-row>
         <v-row>
           <v-col cols="12">
@@ -255,19 +250,13 @@ export default defineComponent({
     async playStep(when: Tone.Unit.Seconds) {
       const triggers = this.actualDrumTriggers[this.counter % this.actualDrumTriggers.length];
       if (triggers.length > 0 && this.sampler) {
-        // Calculate duration: count subsequent empty steps to lengthen the note duration.
-        let durMultiplier = 1;
-        while (
-          this.actualDrumTriggers[(this.counter + durMultiplier) % this.actualDrumTriggers.length].length === 0 &&
-          durMultiplier < this.actualDrumTriggers.length
-        ) {
-          durMultiplier++;
-        }
-        const duration = this.quant * durMultiplier;
+        let dur = 1;
+        while(this.actualDrumTriggers[(this.counter+dur)%this.actualDrumTriggers.length].length == 0) dur++;
+
         for(let trigger of triggers) {
           this.sampler.triggerAttackRelease(
             Tone.Frequency(trigger.pitch, 'midi').toFrequency(),
-            duration.toString()+"s",
+            (dur*this.quant).toString()+"s",
             when,
             trigger.velocity/127.0
           );
@@ -332,14 +321,9 @@ export default defineComponent({
       midi.header.setTempo(this.bpm);
       for (let i = 0; i < this.actualDrumTriggers.length; i++) {
         const triggers = this.actualDrumTriggers[i];
-        let durMultiplier = 1;
-        while (
-          this.actualDrumTriggers[(i + durMultiplier) % this.actualDrumTriggers.length].length === 0 &&
-          durMultiplier < this.actualDrumTriggers.length
-        ) {
-          durMultiplier++;
-        }
-        const duration = this.quant * durMultiplier;
+        let dur = 1;
+        while(this.actualDrumTriggers[(i+dur)%this.actualDrumTriggers.length].length == 0) dur++;
+        const duration = this.quant * dur;
         for(let trigger of triggers) {
           track.addNote({
             midi: trigger.pitch,
