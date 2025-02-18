@@ -55,12 +55,9 @@
           </v-col>
         </v-row>
         <button @click="toggleSequencer" class="stopplay">{{ isRunning ? '⏹️' : '▶️' }}</button>
-      
         <button @click="copyURL" class="userbutton">📋 Copy URL</button>
-      
         <button @click="downloadMIDI" class="downloadmidi">Download MIDI</button>
         <button @click="showHelp = true" class="userbutton">❓ Help</button>
-
       </v-responsive>
       <v-dialog v-model="showPitchHelp" max-width="800px">
         <v-card class="pa-4 bg-black">
@@ -363,10 +360,10 @@ h1 {
   margin-bottom: 10px;
 }
 .stopplay {
-  padding: 10px;
-  font-size: 75px;
+  padding: 2px;
+  font-size: 50px;
   width: 100%;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 .close-btn {
   position: absolute;
