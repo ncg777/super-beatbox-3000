@@ -157,12 +157,12 @@ export default defineComponent({
   data() {
     const params = new URLSearchParams(window.location.search);
     return {
-      bpm: parseInt(params.get("bpm") ?? localStorage.getItem("bpm") ?? "90"),
-      numerator: parseInt(params.get("numerator") ?? localStorage.getItem("numerator") ?? "4"),
-      denominator: parseInt(params.get("denominator") ?? localStorage.getItem("denominator") ?? "4"),
-      drumPitchesInput: params.get("drumPitches") ?? localStorage.getItem("drumPitches") ?? "36 38 39 42 43 46 47 49 50 53 75",
-      sequenceInput: params.get("sequence") ?? localStorage.getItem("sequence") ?? "1 0 32 8 2 0 32 8",
-      velobits: parseInt(params.get("velobits") ?? localStorage.getItem("velobits") ?? "1"),
+      bpm: parseInt(params.get("bpm") ?? localStorage.getItem("bb3k_bpm") ?? "90"),
+      numerator: parseInt(params.get("numerator") ?? localStorage.getItem("bb3k_numerator") ?? "4"),
+      denominator: parseInt(params.get("denominator") ?? localStorage.getItem("bb3k_denominator") ?? "4"),
+      drumPitchesInput: params.get("drumPitches") ?? localStorage.getItem("bb3k_drumPitches") ?? "36 38 39 42 43 46 47 49 50 53 75",
+      sequenceInput: params.get("sequence") ?? localStorage.getItem("bb3k_sequence") ?? "1 0 32 8 2 0 32 8",
+      velobits: parseInt(params.get("velobits") ?? localStorage.getItem("bb3k_velobits") ?? "1"),
       isRunning: false,
       loop: null as Tone.Loop | null,
       counter: 0,
@@ -313,12 +313,12 @@ export default defineComponent({
       console.log('Sequencer stopped');
     },
     saveSettingsToLocalStorage() {
-      localStorage.setItem("bpm", this.bpm.toString());
-      localStorage.setItem("numerator", this.numerator.toString());
-      localStorage.setItem("denominator", this.denominator.toString());
-      localStorage.setItem("drumPitches", this.drumPitchesInput);
-      localStorage.setItem("velobits", this.velobits.toString());
-      localStorage.setItem("sequence", this.sequenceInput);
+      localStorage.setItem("bb3k_bpm", this.bpm.toString());
+      localStorage.setItem("bb3k_numerator", this.numerator.toString());
+      localStorage.setItem("bb3k_denominator", this.denominator.toString());
+      localStorage.setItem("bb3k_drumPitches", this.drumPitchesInput);
+      localStorage.setItem("bb3k_velobits", this.velobits.toString());
+      localStorage.setItem("bb3k_sequence", this.sequenceInput);
       if (this.loop) {
         this.loop.interval = this.quant + "s";
       }
