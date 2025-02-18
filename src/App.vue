@@ -131,9 +131,6 @@
               <li><strong>Main Sequence</strong>: Each number is converted to binary and padded to (number of drum pitches × velobits) bits. It is then split into velobits‑bit chunks – each corresponding (in order) to a drum pitch. A chunk of 0 means “don’t play,” while a nonzero value triggers the sound with velocity proportional to its value.</li>
               <li><strong>Tempo, Numerator, Denominator</strong>: Control the timing and time signature of the loop.</li>
             </ul>
-            <p>
-              The machine uses the <code>smplr</code> npm package to load the default GM kit soundfont for drum samples.
-            </p>
           </v-card-text>
           <v-divider></v-divider>
           <v-card-actions class="pa-4">
@@ -186,6 +183,7 @@ export default defineComponent({
       ] as SoundMapping[],
       sampler: new Tone.Sampler(
         {
+          urls: {
           C2: "BossDR-220/Bassdrum.mp3",
           D2: "BossDR-220/Snaredrum.mp3",
           "D#2": "BossDR-220/Clap.mp3",
@@ -197,9 +195,9 @@ export default defineComponent({
           D3: "BossDR-220/TomH.mp3",
           F3: "BossDR-220/Ride.mp3",
           "D#5": "BossDR-220/Clave.mp3"
-        }, {
+          },
           onload: () => {console.log("samples loaded");},
-          attack:0,
+          attack:0.001,
           release: 1,
           curve: 'exponential'
         }
@@ -255,7 +253,6 @@ export default defineComponent({
   },
   methods: {
     async playStep(when: Tone.Unit.Seconds) {
-      
       const triggers = this.actualDrumTriggers[this.counter % this.actualDrumTriggers.length];
       if (triggers.length > 0 && this.sampler) {
         // Calculate duration: count subsequent empty steps to lengthen the note duration.
@@ -269,10 +266,10 @@ export default defineComponent({
         const duration = this.quant * durMultiplier;
         for(let trigger of triggers) {
           this.sampler.triggerAttackRelease(
-            Tone.Frequency(trigger.pitch, 'midi').toFrequency(),
+            Tone.Frequency(trigger.pitch, 'midi').toNote(),
             duration.toString()+"s",
             when,
-            trigger.velocity
+            trigger.velocity/127.0
           );
         }
       }
@@ -299,8 +296,8 @@ export default defineComponent({
       console.log('Audio context started');
       this.saveSettingsToLocalStorage();
       if (this.loop === null) {
-        this.loop = new Tone.Loop((time: Tone.Unit.Seconds) => {
-          this.playStep(time);
+        this.loop = new Tone.Loop(async (time: Tone.Unit.Seconds) => {
+          await this.playStep(time);
           this.counter = (this.counter + 1) % this.actualDrumTriggers.length;
         }, this.quant + "s");
       }
@@ -328,10 +325,10 @@ export default defineComponent({
       Tone.getTransport().bpm.value = this.bpm;
       Tone.getTransport().timeSignature = [this.numerator, this.denominator];
     },
-    async getMidi(): Promise {
+    async getMidi(): Promise<Midi> {
       const midi = new Midi();
       const track = midi.addTrack();
-      ;
+      
       midi.header.setTempo(this.bpm);
       for (let i = 0; i < this.actualDrumTriggers.length; i++) {
         const triggers = this.actualDrumTriggers[i];
