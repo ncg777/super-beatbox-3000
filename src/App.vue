@@ -126,7 +126,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, markRaw } from 'vue';
 import * as Tone from 'tone';
 import { Midi } from '@tonejs/midi';
 
@@ -163,7 +163,7 @@ export default defineComponent({
         { pitch: "53", sound: "Ride" },
         { pitch: "75", sound: "Clave" }
       ] as SoundMapping[],
-      sampler: new Tone.Sampler(
+      sampler: markRaw(new Tone.Sampler(
         {
           urls: {
           C2: "BossDR-220/Bassdrum.mp3",
@@ -178,12 +178,12 @@ export default defineComponent({
           F3: "BossDR-220/Ride.mp3",
           "D#5": "BossDR-220/Clave.mp3"
           },
-          onload: () => {this.toDestination()},
+          onload: () => {console.log('Samples loaded')},
           attack:0.001,
           release: 0.01,
           curve: 'exponential'
         }
-        ),
+        ).toDestination()),
     };
   },
   computed: {
