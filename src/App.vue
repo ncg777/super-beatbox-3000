@@ -1,7 +1,7 @@
 <template>
-  <v-app style="px-5">
+  <v-app style="pa-4">
     <v-main>
-      <v-responsive class="align-center fill-height mx-auto" max-width="900">
+      <v-responsive class="align-center mx-auto" max-width="900">
         <h1>Super Beatbox 3000</h1>
         <v-row>
           <v-col cols="12" :style="'position:relative'">
@@ -54,24 +54,13 @@
               @update:modelValue="saveSettingsToLocalStorage" />
           </v-col>
         </v-row>
-        <v-row>
-          <v-col cols="12">
-            <button @click="toggleSequencer" class="stopplay">{{ isRunning ? '⏹️' : '▶️' }}</button>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col cols="6">
-            <button @click="copyURL" class="userbutton">📋 Copy URL</button>
-          </v-col>
-          <v-col cols="6">
-            <button @click="downloadMIDI" class="downloadmidi">Download MIDI</button>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col cols="12">
-            <button @click="showHelp = true" class="userbutton">❓ Help</button>
-          </v-col>
-        </v-row>
+        <button @click="toggleSequencer" class="stopplay">{{ isRunning ? '⏹️' : '▶️' }}</button>
+      
+        <button @click="copyURL" class="userbutton">📋 Copy URL</button>
+      
+        <button @click="downloadMIDI" class="downloadmidi">Download MIDI</button>
+        <button @click="showHelp = true" class="userbutton">❓ Help</button>
+
       </v-responsive>
       <v-dialog v-model="showPitchHelp" max-width="800px">
         <v-card class="pa-4 bg-black">
