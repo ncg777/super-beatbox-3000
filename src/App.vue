@@ -268,16 +268,17 @@ export default defineComponent({
       if (this.isRunning) return;
       this.isRunning = true;
       this.counter = 0;
-      
       await Tone.start();
       await Tone.loaded();
+      
       console.log('Audio context started');
       this.saveSettingsToLocalStorage();
+      const that = this;
       if (this.loop === null) {
         this.loop = new Tone.Loop(async (time: Tone.Unit.Seconds) => {
-          await this.playStep(time);
-          this.counter = (this.counter + 1) % this.actualDrumTriggers.length;
-        }, this.quant + "s");
+          await that.playStep(time);
+          that.counter = (that.counter + 1) % that.actualDrumTriggers.length;
+        }, this.quant.toString() + "s");
       }
       this.loop.start(0);
       Tone.getTransport().start();
