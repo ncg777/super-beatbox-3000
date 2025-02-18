@@ -5,7 +5,7 @@
         <h1>Super Beatbox 3000</h1>
         <v-row>
           <v-col cols="12" :style="'position:relative'">
-            <div :style="'position:absolute; right:1em;top:1.5em;'"><v-btn @click="showPitchHelp = true" :style="'z-index: 999;'">Soundmap...</v-btn></div>
+            <div :style="'position:absolute; right:1em;top:1.5em;'"><v-btn @click="showPitchHelp = true" :style="'z-index: 999;'">Key mapping</v-btn></div>
             <v-text-field 
               label="Drum Pitch Sequence" 
               v-model="drumPitchesInput" 
@@ -16,9 +16,9 @@
         <v-row>
           <v-col cols="12">
             <v-text-field 
-              label="Sequence" 
+              :label="`Sequence (${sequence.length})`"
               v-model="sequenceInput" 
-              placeholder="e.g. 1 2 3..." 
+              placeholder="e.g. 0 1 2..." 
               @update:modelValue="saveSettingsToLocalStorage" />
           </v-col>
         </v-row>
@@ -65,7 +65,7 @@
       <v-dialog v-model="showPitchHelp" max-width="800px">
         <v-card class="pa-4 bg-black">
           <v-card-title>
-            <span class="text-h5">Pitch-Sound Associations</span>
+            <span class="text-h5">DR-220</span>
             <v-spacer></v-spacer>
             <v-btn icon @click="showPitchHelp = false" class="close-btn">
               <v-icon>mdi-close</v-icon>
@@ -73,18 +73,19 @@
           </v-card-title>
           <v-divider></v-divider>
           <v-card-text class="pa-4">
-            <h3>DR-220 soundmap</h3>
             <v-table :items="soundMappings" hide-default-footer>
               <thead>
-                <tr>
-                  <th>pitch</th>
-                  <th>sound</th>
-                </tr>
-              </thead>
+              <tr>
+                <th>MIDI Pitch</th>
+                <th>SOUND</th>
+              </tr>
+            </thead>
+            <tbody>
               <tr v-for="item in soundMappings" :key="item.pitch">
                 <td>{{ item.pitch }}</td>
                 <td>{{ item.sound }}</td>
               </tr>
+            </tbody>
             </v-table>
           </v-card-text>
           <v-divider></v-divider>
@@ -180,12 +181,12 @@ export default defineComponent({
           F3: "BossDR-220/Ride.mp3",
           "D#5": "BossDR-220/Clave.mp3"
           },
-          onload: () => {console.log("samples loaded");},
+          onload: () => {this.toDestination()},
           attack:0.001,
           release: 0.01,
           curve: 'exponential'
         }
-        ).toDestination(),
+        ),
     };
   },
   computed: {
@@ -244,7 +245,7 @@ export default defineComponent({
 
         for(let trigger of triggers) {
           this.sampler.triggerAttackRelease(
-            Tone.Frequency(trigger.pitch, 'midi').toFrequency(),
+            Tone.Frequency(trigger.pitch, 'midi').toNote(),
             (dur*this.quant).toString()+"s",
             when,
             trigger.velocity/127.0
@@ -270,7 +271,6 @@ export default defineComponent({
       this.counter = 0;
       await Tone.start();
       await Tone.loaded();
-      
       console.log('Audio context started');
       this.saveSettingsToLocalStorage();
       const that = this;
