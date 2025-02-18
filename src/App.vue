@@ -2,7 +2,7 @@
   <v-app style="pa-4">
     <v-main>
       <v-responsive class="align-center mx-auto" max-width="900">
-        <h1>Super Beatbox 3000</h1>
+        <h1>Super Beatbox 3k</h1>
         <v-row>
           <v-col cols="12" :style="'position:relative'">
             <div :style="'position:absolute; right:1em;top:1.5em;'"><v-btn @click="showPitchHelp = true" :style="'z-index: 999;'">Key mapping</v-btn></div>
