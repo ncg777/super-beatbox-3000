@@ -333,7 +333,7 @@ export default defineComponent({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `SuperBeatbox3000-${this.formattedDate}-${this.bpm}BPM-${this.numerator}on${this.denominator}.mid`;
+      a.download = `SBbox3k-${this.formattedDate}-${this.bpm}BPM-${this.numerator}on${this.denominator}.mid`;
       a.click();
       URL.revokeObjectURL(url);
     },
