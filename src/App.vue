@@ -23,14 +23,14 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="6">
+          <v-col cols="12">
             <v-slider 
               :label="'Tempo (' + bpm + ' BPM)'" 
               min="1" step="1" max="499" 
               v-model.number="bpm" 
               @update:modelValue="saveSettingsToLocalStorage" />
           </v-col>
-          <v-col cols="6">
+          <v-col cols="12">
             <v-slider 
               :label="'Velo bits/pitch (' + velobits + ')'" 
               min="1" max="7" step="1" 
@@ -39,14 +39,14 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="6">
+          <v-col cols="12">
             <v-slider 
               :label="'Numerator (' + numerator + ')'" 
               min="1" step="1" max="16" 
               v-model.number="numerator" 
               @update:modelValue="saveSettingsToLocalStorage" />
           </v-col>
-          <v-col cols="6">
+          <v-col cols="12">
             <v-slider 
               :label="'Denominator (' + denominator + ')'" 
               min="1" step="1" max="16" 
