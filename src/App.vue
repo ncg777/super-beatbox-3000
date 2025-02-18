@@ -237,11 +237,11 @@ export default defineComponent({
     },
   },
   methods: {
-    async playStep(when: Tone.Unit.Seconds) {
-      const triggers = this.actualDrumTriggers[this.counter % this.actualDrumTriggers.length];
+    async playStep(when: Tone.Unit.Seconds, counter:number) {
+      const triggers = this.actualDrumTriggers[counter % this.actualDrumTriggers.length];
       if (triggers.length > 0 && this.sampler) {
         let dur = 1;
-        while(this.actualDrumTriggers[(this.counter+dur)%this.actualDrumTriggers.length].length == 0) dur++;
+        while(this.actualDrumTriggers[(counter+dur)%this.actualDrumTriggers.length].length == 0) dur++;
 
         for(let trigger of triggers) {
           this.sampler.triggerAttackRelease(
@@ -276,7 +276,7 @@ export default defineComponent({
       const that = this;
       if (this.loop === null) {
         this.loop = new Tone.Loop(async (time: Tone.Unit.Seconds) => {
-          await that.playStep(time);
+          that.playStep(time, that.counter);
           that.counter = (that.counter + 1) % that.actualDrumTriggers.length;
         }, this.quant.toString() + "s");
       }
