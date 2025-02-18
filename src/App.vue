@@ -32,7 +32,7 @@
           </v-col>
           <v-col cols="6">
             <v-slider 
-              :label="'Velociy Bits per Pitch (' + velobits + ')'" 
+              :label="'Velo bits/pitch (' + velobits + ')'" 
               min="1" max="7" step="1" 
               v-model.number="velobits" 
               @update:modelValue="saveSettingsToLocalStorage" />
