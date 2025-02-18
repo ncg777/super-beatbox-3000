@@ -198,7 +198,7 @@ export default defineComponent({
           },
           onload: () => {console.log("samples loaded");},
           attack:0.001,
-          release: 1,
+          release: 0.01,
           curve: 'exponential'
         }
         ).toDestination(),
@@ -266,7 +266,7 @@ export default defineComponent({
         const duration = this.quant * durMultiplier;
         for(let trigger of triggers) {
           this.sampler.triggerAttackRelease(
-            Tone.Frequency(trigger.pitch, 'midi').toNote(),
+            Tone.Frequency(trigger.pitch, 'midi').toFrequency(),
             duration.toString()+"s",
             when,
             trigger.velocity/127.0
