@@ -7,7 +7,7 @@
           <v-col cols="12" :style="'position:relative'">
             <div :style="'position:absolute; right:1em;top:1.5em;'"><v-btn @click="showPitchHelp = true" :style="'z-index: 999;'">Key mapping</v-btn></div>
             <v-text-field 
-              :label="`Drum Pitches (${drumPitchesInput.length})`" 
+              :label="`Drum Pitches (${drumPitches.length})`" 
               v-model="drumPitchesInput" 
               placeholder="e.g. 36 38 39 42 43 46 47 49 50 53 75" 
               @update:modelValue="saveSettingsToLocalStorage" />
