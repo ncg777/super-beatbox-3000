@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/super-beatbox-3000/sw.js', { scope: '/super-beatbox-3000/' })})}
