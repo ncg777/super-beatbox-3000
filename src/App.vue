@@ -75,7 +75,7 @@
             />
           </v-col>
         </v-row>
-        <!--
+        
         <v-row>
           <v-col cols="3">
             <v-switch 
@@ -102,7 +102,7 @@
             />
           </v-col>
         </v-row>
-        -->
+        
         <button @click="toggleSequencer" class="stopplay">{{ isRunning ? '⏹️' : '▶️' }}</button>
         <button @click="copyURL" class="userbutton">📋 Copy URL</button>
         <button @click="downloadMIDI" class="downloadmidi">Download MIDI</button>
@@ -241,7 +241,8 @@ export default defineComponent({
       midiChannel: 10,
       midiAccess: null as MIDIAccess | null,
       midiOutput: null as MIDIOutput | null,
-      appVersion: appVersion
+      appVersion: appVersion,
+      midiOffsetMs: 0
     };
   },
   computed: {
@@ -312,12 +313,12 @@ export default defineComponent({
         this.midiOutput = null;
       }
     },
-    async playNoteWithMidi(note: number, velocity: number, duration: number, when: DOMHighResTimeStamp) {
+    async playNoteWithMidi(note: number, velocity: number, duration: number, when: Tone.Unit.Seconds) {
       if (this.midiOutput!!) {
           const noteOn = [0x90 + this.midiChannel-1, note, Math.round(velocity*127.0)];
           const noteOff = [0x80 + this.midiChannel-1, note, 0];
-          this.midiOutput!.send(noteOn,when);
-          this.midiOutput!.send(noteOff,when+duration*1000.0);
+          this.midiOutput!.send(noteOn,this.midiOffsetMs+when*1000);
+          this.midiOutput!.send(noteOff,this.midiOffsetMs+(when+duration)*1000.0);
       }
     },
     async playStep(when: Tone.Unit.Seconds, counter:number) {
@@ -326,10 +327,8 @@ export default defineComponent({
         let dur = 1;
         while(this.actualDrumTriggers[(counter+dur)%this.actualDrumTriggers.length].length == 0) dur++;
         if (this.useMidiOutput) {
-          const transportNow = Tone.getTransport().seconds;
-          const when2 =  performance.now() + ((when - transportNow) * 1000);
           for(let trigger of triggers) {
-            this.playNoteWithMidi(trigger.pitch, trigger.velocity/127.0, dur*this.quant*this.lengthFactor/100.0, when2);
+            this.playNoteWithMidi(trigger.pitch, trigger.velocity/127.0, dur*this.quant*this.lengthFactor/100.0, when);
           }
         } else {
           for(let trigger of triggers) {
@@ -373,6 +372,8 @@ export default defineComponent({
         }, this.quant.toString() + "s");
       }
       this.loop.start(0);
+      Tone.getTransport().seconds=0;
+      if(this.midiOffsetMs == 0) this.midiOffsetMs = performance.now();
       Tone.getTransport().start();
       console.log('Sequencer started');
     },
