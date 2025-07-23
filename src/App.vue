@@ -75,6 +75,7 @@
             />
           </v-col>
         </v-row>
+        <!--
         <v-row>
           <v-col cols="3">
             <v-switch 
@@ -101,6 +102,7 @@
             />
           </v-col>
         </v-row>
+        -->
         <button @click="toggleSequencer" class="stopplay">{{ isRunning ? '⏹️' : '▶️' }}</button>
         <button @click="copyURL" class="userbutton">📋 Copy URL</button>
         <button @click="downloadMIDI" class="downloadmidi">Download MIDI</button>
@@ -141,7 +143,7 @@
       <v-dialog v-model="showHelp" max-width="800px">
         <v-card class="pa-4 bg-black">
           <v-card-title class="pa-4">
-            <span class="text-h5 font-weight-bold">Help</span>
+            <span class="text-h5 font-weight-bold">Super Beatbox 3000<small style="font-size:0.6em; color:#888; margin-left:1em;">v{{ appVersion }}</small></span>
             <v-spacer></v-spacer>
             <v-btn icon @click="showHelp = false" class="close-btn">
               <v-icon>mdi-close</v-icon>
