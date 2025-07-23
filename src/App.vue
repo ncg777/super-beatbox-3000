@@ -31,15 +31,15 @@
               @update:modelValue="saveSettingsToLocalStorage" />
           </v-col>
         </v-row>
-        <v-row>
-          <v-col cols="12" class="compact-row">
+        <v-row class="compact-row">
+          <v-col cols="12">
             <v-slider 
               :label="'Tempo (' + bpm + ' BPM)'" 
               min="1" step="1" max="500" 
               v-model.number="bpm" 
               @update:modelValue="saveSettingsToLocalStorage" />
           </v-col>
-          <v-col cols="12" class="compact-row">
+          <v-col cols="12">
             <v-slider 
               :label="'Velo bits/pitch (' + velobits + ')'" 
               min="1" max="7" step="1" 
@@ -47,8 +47,8 @@
               @update:modelValue="saveSettingsToLocalStorage" />
           </v-col>
         </v-row>
-        <v-row>
-          <v-col cols="12" class="compact-row">
+        <v-row class="compact-row">
+          <v-col cols="12">
             <v-slider 
               :label="'Numerator (' + numerator + ')'" 
               min="1" step="1" max="16" 
@@ -352,7 +352,7 @@ export default defineComponent({
       }
     },
     async copyURL() {
-      const url = encodeURI(`https://ncg777.github.io/super-beatbox-3000?bpm=${this.bpm}&numerator=${this.numerator}&denominator=${this.denominator}&drumPitches=${this.drumPitchesInput}&velobits=${this.velobits}&sequence=${this.sequenceInput}`);
+      const url = encodeURI(`https://ncg777.github.io/super-beatbox-3000?bpm=${this.bpm}&numerator=${this.numerator}&denominator=${this.denominator}&drumPitches=${this.drumPitchesInput}&velobits=${this.velobits}&lengthFactor=${this.lengthFactor}&sequence=${this.sequenceInput}`);
       await navigator.clipboard.writeText(url);
       window.alert("URL copied to clipboard.");
     },
