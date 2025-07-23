@@ -310,12 +310,12 @@ export default defineComponent({
         this.midiOutput = null;
       }
     },
-    async playNoteWithMidi(note: number, velocity: number, duration: number, when: Tone.Unit.Seconds) {
+    async playNoteWithMidi(note: number, velocity: number, duration: number, when: DOMHighResTimeStamp) {
       if (this.midiOutput!!) {
           const noteOn = [0x90 + this.midiChannel-1, note, Math.round(velocity*127.0)];
           const noteOff = [0x80 + this.midiChannel-1, note, 0];
-          this.midiOutput!.send(noteOn,when*1000);
-          this.midiOutput!.send(noteOff,(when+duration)*1000.0);
+          this.midiOutput!.send(noteOn,when);
+          this.midiOutput!.send(noteOff,when+duration*1000.0);
       }
     },
     async playStep(when: Tone.Unit.Seconds, counter:number) {
@@ -324,8 +324,10 @@ export default defineComponent({
         let dur = 1;
         while(this.actualDrumTriggers[(counter+dur)%this.actualDrumTriggers.length].length == 0) dur++;
         if (this.useMidiOutput) {
+          const transportNow = Tone.getTransport().seconds;
+          const when2 =  performance.now() + ((when - transportNow) * 1000);
           for(let trigger of triggers) {
-            this.playNoteWithMidi(trigger.pitch, trigger.velocity/127.0, dur*this.quant*this.lengthFactor/100.0, (window.performance.now()/1000.0));
+            this.playNoteWithMidi(trigger.pitch, trigger.velocity/127.0, dur*this.quant*this.lengthFactor/100.0, when2);
           }
         } else {
           for(let trigger of triggers) {
