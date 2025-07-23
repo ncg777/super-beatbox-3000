@@ -1,7 +1,6 @@
 {
   "name": "super-beatbox-3000",
   "version": "2025.5.30",
-  "private": false,
   "scripts": {
     "build": "run-p type-check \"build-only {@}\" --",
     "build-only": "vite build",
@@ -14,7 +13,6 @@
     "@tonejs/midi": "^2.0.28",
     "register-service-worker": "^1.7.2",
     "roboto-fontface": "*",
-    "testvuetify": "file:",
     "tone": "^15.0.4",
     "vue": "^3.4.31",
     "vuetify": "^3.6.14"
@@ -37,5 +35,6 @@
     "vue-tsc": "^2.1.10"
   },
   "homepage": "https://github.com/ncg777/super-beatbox-3000",
-  "type": "module"
+  "type": "module",
+  "packageManager": "yarn@4.9.2"
 }

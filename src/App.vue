@@ -2,7 +2,16 @@
   <v-app>
     <v-main>
       <v-responsive class="align-center mx-auto pa-4" max-width="900">
-        <h1>Super Beatbox 3k</h1>
+        <h1>
+          Super Beatbox 3k
+          <v-btn 
+          icon 
+          @click="showHelp = true" 
+          class="help-button"
+        >
+          <v-icon>mdi-help-circle</v-icon>
+        </v-btn>
+        </h1>
         <v-row>
           <v-col cols="12" :style="'position:relative'">
             <div :style="'position:absolute; right:1em;top:1.5em;'"><v-btn @click="showPitchHelp = true" :style="'z-index: 999;'">Key mapping</v-btn></div>
@@ -23,14 +32,14 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="12">
+          <v-col cols="12" class="compact-row">
             <v-slider 
               :label="'Tempo (' + bpm + ' BPM)'" 
-              min="1" step="1" max="499" 
+              min="1" step="1" max="500" 
               v-model.number="bpm" 
               @update:modelValue="saveSettingsToLocalStorage" />
           </v-col>
-          <v-col cols="12">
+          <v-col cols="12" class="compact-row">
             <v-slider 
               :label="'Velo bits/pitch (' + velobits + ')'" 
               min="1" max="7" step="1" 
@@ -39,14 +48,14 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="12">
+          <v-col cols="12" class="compact-row">
             <v-slider 
               :label="'Numerator (' + numerator + ')'" 
               min="1" step="1" max="16" 
               v-model.number="numerator" 
               @update:modelValue="saveSettingsToLocalStorage" />
           </v-col>
-          <v-col cols="12">
+          <v-col cols="12" class="compact-row">
             <v-slider 
               :label="'Denominator (' + denominator + ')'" 
               min="1" step="1" max="16" 
@@ -54,10 +63,47 @@
               @update:modelValue="saveSettingsToLocalStorage" />
           </v-col>
         </v-row>
+        <v-row class="compact-row">
+          <v-col cols="12">
+            <v-slider 
+              :label="'Note Length (' + lengthFactor + '%)'" 
+              min="1" 
+              max="400" 
+              step="1" 
+              v-model.number="lengthFactor" 
+              @update:modelValue="saveSettingsToLocalStorage" 
+            />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="3">
+            <v-switch 
+              v-model="useMidiOutput" 
+              label="Use MIDI Output" 
+              @update:modelValue="updateMidiMode"
+            />
+          </v-col>
+          <v-col cols="3" v-if="useMidiOutput">
+            <v-select 
+              v-model="selectedMidiDevice" 
+              :items="midiDevices" 
+              label="MIDI Device" 
+              @update:modelValue="updateMidiDevice"
+            />
+          </v-col>
+          <v-col cols="6" v-if="useMidiOutput">
+            <v-slider 
+              :label="'Channel (' + midiChannel + ')'" 
+              min="1" 
+              max="16" 
+              step="1" 
+              v-model.number="midiChannel"
+            />
+          </v-col>
+        </v-row>
         <button @click="toggleSequencer" class="stopplay">{{ isRunning ? '⏹️' : '▶️' }}</button>
         <button @click="copyURL" class="userbutton">📋 Copy URL</button>
         <button @click="downloadMIDI" class="downloadmidi">Download MIDI</button>
-        <button @click="showHelp = true" class="userbutton">❓ Help</button>
       </v-responsive>
       <v-dialog v-model="showPitchHelp" max-width="800px">
         <v-card class="pa-4 bg-black">
@@ -126,6 +172,8 @@
 </template>
 
 <script lang="ts">
+import pkg from '../package.json';
+const appVersion = pkg.version;
 import { defineComponent, markRaw } from 'vue';
 import * as Tone from 'tone';
 import { Midi } from '@tonejs/midi';
@@ -145,6 +193,7 @@ export default defineComponent({
       drumPitchesInput: params.get("drumPitches") ?? localStorage.getItem("bb3k_drumPitches") ?? "36 38 39 42 43 46 47 49 50 53 75",
       sequenceInput: params.get("sequence") ?? localStorage.getItem("bb3k_sequence") ?? "1 0 32 8 2 0 32 8",
       velobits: parseInt(params.get("velobits") ?? localStorage.getItem("bb3k_velobits") ?? "1"),
+      lengthFactor: parseInt(params.get("lengthFactor") ?? localStorage.getItem("bb3k_lengthFactor") ?? "100"),
       isRunning: false,
       loop: null as Tone.Loop | null,
       counter: 0,
@@ -184,6 +233,13 @@ export default defineComponent({
           curve: 'exponential'
         }
         ).toDestination()),
+      useMidiOutput: false,
+      midiDevices: [] as string[],
+      selectedMidiDevice: null,
+      midiChannel: 10,
+      midiAccess: null as MIDIAccess | null,
+      midiOutput: null as MIDIOutput | null,
+      appVersion: appVersion
     };
   },
   computed: {
@@ -234,20 +290,54 @@ export default defineComponent({
     },
   },
   methods: {
+    async initializeMidi() {
+      try {
+        const access = await navigator.requestMIDIAccess();
+        this.midiAccess = access;
+        this.midiDevices = Array.from(access.outputs.values()).map(output => output.name!);
+      } catch (error) {
+        console.error("Failed to initialize MIDI:", error);
+      }
+    },
+    updateMidiDevice() {
+      const device = Array.from(this.midiAccess?.outputs.values() || []).find(output => output.name === this.selectedMidiDevice);
+      this.midiOutput = device || null;
+    },
+    updateMidiMode() {
+      if (this.useMidiOutput) {
+        this.initializeMidi();
+      } else {
+        this.midiOutput = null;
+      }
+    },
+    async playNoteWithMidi(note: number, velocity: number, duration: number, when: Tone.Unit.Seconds) {
+      if (this.midiOutput!!) {
+          const noteOn = [0x90 + this.midiChannel-1, note, Math.round(velocity*127.0)];
+          const noteOff = [0x80 + this.midiChannel-1, note, 0];
+          this.midiOutput!.send(noteOn,when*1000);
+          this.midiOutput!.send(noteOff,(when+duration)*1000.0);
+      }
+    },
     async playStep(when: Tone.Unit.Seconds, counter:number) {
       const triggers = this.actualDrumTriggers[counter % this.actualDrumTriggers.length];
       if (triggers.length > 0 && this.sampler) {
         let dur = 1;
         while(this.actualDrumTriggers[(counter+dur)%this.actualDrumTriggers.length].length == 0) dur++;
-
-        for(let trigger of triggers) {
-          this.sampler.triggerAttackRelease(
-            Tone.Frequency(trigger.pitch, 'midi').toNote(),
-            (dur*this.quant).toString()+"s",
-            when,
-            trigger.velocity/127.0
-          );
+        if (this.useMidiOutput) {
+          for(let trigger of triggers) {
+            this.playNoteWithMidi(trigger.pitch, trigger.velocity/127.0, dur*this.quant*this.lengthFactor/100.0, (window.performance.now()/1000.0));
+          }
+        } else {
+          for(let trigger of triggers) {
+            this.sampler.triggerAttackRelease(
+              Tone.Frequency(trigger.pitch, 'midi').toNote(),
+              (dur*this.quant*this.lengthFactor/100.0).toString()+"s",
+              when,
+              trigger.velocity/127.0
+            );
+          }
         }
+        
       }
     },
     async toggleSequencer() {
@@ -268,6 +358,7 @@ export default defineComponent({
       this.counter = 0;
       await Tone.start();
       await Tone.loaded();
+
       console.log('Audio context started');
       this.saveSettingsToLocalStorage();
       const that = this;
@@ -295,6 +386,7 @@ export default defineComponent({
       localStorage.setItem("bb3k_drumPitches", this.drumPitchesInput);
       localStorage.setItem("bb3k_velobits", this.velobits.toString());
       localStorage.setItem("bb3k_sequence", this.sequenceInput);
+      localStorage.setItem("bb3k_lengthFactor", this.lengthFactor.toString());
       if (this.loop) {
         this.loop.interval = this.quant + "s";
       }
@@ -304,6 +396,7 @@ export default defineComponent({
     async getMidi(): Promise<Midi> {
       const midi = new Midi();
       const track = midi.addTrack();
+      track.channel = this.useMidiOutput ? this.midiChannel : 10;
       
       midi.header.setTempo(this.bpm);
       for (let i = 0; i < this.actualDrumTriggers.length; i++) {
@@ -338,16 +431,18 @@ export default defineComponent({
   beforeUnmount() {
     this.stopSequencer();
   },
-  mounted() {
+  async onMounted() {
     this.saveSettingsToLocalStorage();
+    if (this.useMidiOutput) {
+      await this.initializeMidi();
+    }
   }
 });
 </script>
 
 <style scoped>
 body, * {
-  color: #00aa00;
-  background-color: #000000;
+  background-color: #000000 !important;
 }
 h1 {
   text-align: center;
@@ -369,5 +464,10 @@ h1 {
   position: absolute;
   top: 16px;
   right: 16px;
+}
+.compact-row * {
+  padding:0;
+  margin-bottom: 0;
+  margin-top: 0;
 }
 </style>
