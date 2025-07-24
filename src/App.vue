@@ -75,7 +75,7 @@
             />
           </v-col>
         </v-row>
-        <!--
+        
         <v-row>
           <v-col cols="3">
             <v-switch 
@@ -102,7 +102,7 @@
             />
           </v-col>
         </v-row>
-        -->
+        
         <button @click="toggleSequencer" class="stopplay">{{ isRunning ? '⏹️' : '▶️' }}</button>
         <button @click="copyURL" class="userbutton">📋 Copy URL</button>
         <button @click="downloadMIDI" class="downloadmidi">Download MIDI</button>
@@ -242,7 +242,8 @@ export default defineComponent({
       midiAccess: null as MIDIAccess | null,
       midiOutput: null as MIDIOutput | null,
       appVersion: appVersion,
-      midiOffsetMs: 0
+      pnowMs: -1,
+      transportnowMs:-1,
     };
   },
   computed: {
@@ -310,15 +311,15 @@ export default defineComponent({
       if (this.useMidiOutput) {
         this.initializeMidi();
       } else {
-        this.midiOutput = null;
+        //this.midiOutput = null;
       }
     },
     async playNoteWithMidi(note: number, velocity: number, duration: number, when: Tone.Unit.Seconds) {
       if (this.midiOutput!!) {
           const noteOn = [0x90 + this.midiChannel-1, note, Math.round(velocity*127.0)];
           const noteOff = [0x80 + this.midiChannel-1, note, 0];
-          this.midiOutput!.send(noteOn,this.midiOffsetMs+when*1000);
-          this.midiOutput!.send(noteOff,this.midiOffsetMs+(when+duration)*1000.0);
+          this.midiOutput!.send(noteOn,this.pnowMs-this.transportnowMs+when*1000);
+          this.midiOutput!.send(noteOff,this.pnowMs-this.transportnowMs+(when+duration)*1000.0);
       }
     },
     async playStep(when: Tone.Unit.Seconds, counter:number) {
@@ -373,7 +374,8 @@ export default defineComponent({
       }
       this.loop.start(0);
       Tone.getTransport().seconds=0;
-      if(this.midiOffsetMs == 0) this.midiOffsetMs = performance.now();
+      if(this.pnowMs < 0) this.pnowMs = performance.now();
+      this.transportnowMs = Tone.getTransport().seconds*1000;
       Tone.getTransport().start();
       console.log('Sequencer started');
     },
