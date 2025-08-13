@@ -221,7 +221,7 @@ export default defineComponent({
           D2: "BossDR-220/Snaredrum.mp3",
           "D#2": "BossDR-220/Clap.mp3",
           "F#2": "BossDR-220/HatClosed.mp3",
-          A2: "BossDR-220/TomL.mp3",
+          G2: "BossDR-220/TomL.mp3",
           "A#2": "BossDR-220/HatOpen.mp3",
           B2:"BossDR-220/TomM.mp3",
           "C#3": "BossDR-220/Crash.mp3",
