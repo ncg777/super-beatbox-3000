@@ -287,13 +287,13 @@ export default defineComponent({
         return triggers;
       });
     },
+  },
+  methods: {
     formattedDate() {
       return ((timestamp: number) =>
         `${new Date(timestamp).getUTCFullYear()}${String(new Date(timestamp).getUTCMonth() + 1).padStart(2, '0')}${String(new Date(timestamp).getUTCDate()).padStart(2, '0')}T${String(new Date(timestamp).getUTCHours()).padStart(2, '0')}${String(new Date(timestamp).getUTCMinutes()).padStart(2, '0')}${String(new Date(timestamp).getUTCSeconds()).padStart(2, '0')}Z`
       )(Date.now());
     },
-  },
-  methods: {
     async initializeMidi() {
       try {
         const access = await navigator.requestMIDIAccess();
@@ -430,7 +430,7 @@ export default defineComponent({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `SBbox3k-${this.formattedDate}-${this.bpm}BPM-${this.numerator}on${this.denominator}.mid`;
+      a.download = `SBbox3k-${this.formattedDate()}-${this.bpm}BPM-${this.numerator}on${this.denominator}.mid`;
       a.click();
       URL.revokeObjectURL(url);
     },
