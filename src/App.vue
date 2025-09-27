@@ -249,7 +249,7 @@ export default defineComponent({
   computed: {
     // The quantization value (in seconds) for each step.
     quant() {
-      return 240.0 / (this.bpm * this.numerator * this.denominator);
+      return 60.0 / (this.bpm * this.denominator);
     },
     // Main sequence as an array of numbers.
     sequence(): number[] {
