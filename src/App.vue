@@ -242,8 +242,6 @@ export default defineComponent({
       midiAccess: null as MIDIAccess | null,
       midiOutput: null as MIDIOutput | null,
       appVersion: appVersion,
-      pnowMs: -1,
-      transportnowMs:-1,
     };
   },
   computed: {
@@ -318,8 +316,17 @@ export default defineComponent({
       if (this.midiOutput!!) {
           const noteOn = [0x90 + this.midiChannel-1, note, Math.round(velocity*127.0)];
           const noteOff = [0x80 + this.midiChannel-1, note, 0];
-          this.midiOutput!.send(noteOn,this.pnowMs-this.transportnowMs+when*1000);
-          this.midiOutput!.send(noteOff,this.pnowMs-this.transportnowMs+(when+duration)*1000.0);
+          
+          // 'when' is in the AudioContext time coordinates; convert to Performance timeline
+          const ctxNow = Tone.now();
+          const nowMs = performance.now();
+          // Schedule relative to now; clamp to 0 to avoid negative scheduling
+          const delayMs = Math.max(0, (when - ctxNow) * 1000);
+          const onTimeMs = nowMs + delayMs;
+          const offTimeMs = onTimeMs + Number(duration) * 1000;
+
+          this.midiOutput!.send(noteOn, onTimeMs);
+          this.midiOutput!.send(noteOff, offTimeMs);
       }
     },
     async playStep(when: Tone.Unit.Seconds, counter:number) {
@@ -373,9 +380,7 @@ export default defineComponent({
         }, this.quant.toString() + "s");
       }
       this.loop.start(0);
-      Tone.getTransport().seconds=0;
-      if(this.pnowMs < 0) this.pnowMs = performance.now();
-      this.transportnowMs = Tone.getTransport().seconds*1000;
+      Tone.getTransport().seconds = 0;
       Tone.getTransport().start();
       console.log('Sequencer started');
     },
